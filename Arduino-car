@@ -1,0 +1,81 @@
+#define enA 9
+#define in1 6
+#define in2 5
+#define in3 3
+#define in4 4
+
+
+const int threshold = 225;    // Threshold for clap detection
+unsigned long lastClapTime = 0;
+int clapCount = 0;
+int ClapLag = 150;
+int MoveLag = 600;
+
+
+void setup() {
+  pinMode(enA, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  Serial.begin(115200);
+  stopMotor(); // Ensure motor is stopped at the start
+}
+
+
+void loop() {
+  int sensorValue = analogRead(A0);
+ 
+
+
+  // Detect a clap
+  if (sensorValue > threshold && millis() - lastClapTime > ClapLag) {
+    Serial.println("Clap");
+    Serial.println(sensorValue);
+    clapCount++;
+    lastClapTime = millis();
+    delay(200); // Prevents multiple detections from a single clap
+  }
+
+
+  // If no claps detected for a period of time, decide action based on clap count
+  if (millis() - lastClapTime > MoveLag && clapCount > 0) {
+    if (clapCount == 2) {
+      moveForward();
+    } else if (clapCount == 3) {
+      moveBackward();
+    } else if (clapCount == 1) {
+      stopMotor();
+    }
+    clapCount = 0; // Reset clap count after taking action
+  }
+}
+
+
+void moveForward() {
+
+
+  analogWrite(enA, 255);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, HIGH);
+}
+
+
+void moveBackward() {
+
+
+  analogWrite(enA, 255);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+
+
+void stopMotor() {
+  analogWrite(enA, 0);
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+}
